@@ -1,5 +1,10 @@
 ## The LengkuasSFL Scripting Language
 
+![Static Badge](https://img.shields.io/badge/License-Apache_License_2.0-blue?style=flat)
+![Static Badge](https://img.shields.io/badge/Documentation_License-CC%20BY--SA_4.0-blue?style=flat)
+
+___
+
 LengkuasSFL or simply Lengkuas is an open source, embedded domain specific scripting language for real-time sensor stream filtering and setting measurement scope limits in sensor systems like for example TinyML with sensor fusion.
 
 ## The `LenguasSFL` Philosophy
