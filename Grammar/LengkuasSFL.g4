@@ -10,6 +10,7 @@ F64: 'f64';
 BOOL: 'bool';
 SSTREAM: 'sstream';
 CONST: 'const';
+ANY: 'any';
 
 //control flow
 IF: 'if';
@@ -18,6 +19,7 @@ ELSE: 'else';
 ENDIF: 'endif';
 SWITCH: 'sw';
 CASE: 'case';
+ENDCASE: 'endcase';
 DEFAULT: 'default';
 ENDSW: 'endsw';
 
@@ -53,7 +55,7 @@ KELVIN: 'kelvin';
 //other syntax
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 NUMBER: [0-9]+ ('.' [0-9]+)? | '0x' [0-9a-fA-F]+;
-STRING: '"' .*? '"';
+STRING: '"' ( '\\' . | ~["\\\r\n] )* '"';
 BOOL_LITERAL: 'true' | 'false';
 NIL: 'nil';
 SEMICOLON: ';';
@@ -75,9 +77,10 @@ LBRACKET: '[';
 RBRACKET: ']';
 INCREMENT: '++';
 DECREMENT: '--';
-WS: [ \t\r\n]+ -> skip;
-COMMENT: '~' ~[\r\n]* -> skip;
+NEWLINE: ('\r'? '\n')+;
+WS: [ \t]+ -> skip;
 MULTILINE_COMMENT: '~~' .*? '~~' -> skip;
+COMMENT: '~' ~[ \r\n]* -> skip;
 AND: '&&';
 OR: '||';
 NOT: '!';
@@ -90,23 +93,25 @@ GTE: '>=';
 PTR: '^';
 
 //Parser rules
-program: (statement)* EOF;
+program: (statement (NEWLINE+))* EOF;
 
-statement: variableDeclaration
+simpleStatement: variableDeclaration
+               | functionCall
+               | incrementDecrement
+               | returnStatement
+               | diagnosticStatement;
+
+statement: simpleStatement
          | functionDeclaration
          | controlFlow
          | loop
          | ioOperation
-         | templateLiteral
-         | errorHandling
-         | pointerReference
          | asyncBlock
-         | incrementDecrement
-         | returnStatement;
+         | errorHandling;
 
 variableDeclaration: (CONST)? dataType (ARR | DICT)? IDENTIFIER ASSIGN expression;
 
-dataType: STR | I32 | I64 | F32 | F64 | BOOL | SSTREAM;
+dataType: STR | I32 | I64 | F32 | F64 | BOOL | SSTREAM | ANY;
 
 expression: orExpr;
 
@@ -129,23 +134,22 @@ primaryExpression: NUMBER
                  | BOOL_LITERAL
                  | NIL
                  | IDENTIFIER
-                 | templateLiteral
                  | LPAREN expression RPAREN;
 
-templateLiteral: STRING ('$' IDENTIFIER | '${' expression '}$')*;
 
 functionDeclaration: FUN IDENTIFIER LPAREN (parameter (COMMA parameter)*)? RPAREN ARROW dataType COLON statement+ ENDFUN;
 
 parameter: dataType IDENTIFIER;
 
 returnStatement: RET expression?;
+
 controlFlow: ifStatement | switchStatement;
 
 ifStatement: IF LPAREN expression RPAREN COLON statement+ (ELIF LPAREN expression RPAREN COLON statement+)* ELSE COLON statement+ ENDIF;
 
-switchStatement: SWITCH LPAREN expression RPAREN COLON (caseBlock)+ (defaultBlock)? ENDSW;
+switchStatement: SWITCH LPAREN expression RPAREN COLON (caseBlock)+ defaultBlock ENDSW;
 
-caseBlock: CASE expression COLON LBRACE statement+ RBRACE;
+caseBlock: CASE expression COLON statement+ ENDCASE;
 
 defaultBlock: DEFAULT COLON LBRACE statement+ RBRACE;
 
@@ -161,7 +165,7 @@ ioOperation: functionCall;
 
 functionCall: IDENTIFIER LPAREN (expression (COMMA expression)*)? RPAREN;
 
-pointerReference: PTR IDENTIFIER;
+diagnosticStatement: PTR IDENTIFIER;
 
 asyncBlock: ASYNC LPAREN (parameter (COMMA parameter)*)? RPAREN COLON statement+ RESYNC;
 

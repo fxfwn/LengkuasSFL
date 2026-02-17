@@ -11,7 +11,7 @@ temp(MySensor, celcius)
 This keeps Lengkuas deterministic and efficient while improving readability.
 
 ### Style Guidelines
-There are style recommendations for coding in LengkuasSFL, such as using four spaces for indentation, instead of tab. Semicolons may be omitted at the end of a statement, but adding them anyway is acceptable. Semicolons are required in `for`loop expressions. It is highly recommended to keep spaces between values or variables and operators. Function names should use `camelCase` or `Snake_Case`, variables can use `PascalCase`, `Kebab-Case` or ideally `lowercase`. Variables must be initialized upon declaration
+There are style recommendations for coding in LengkuasSFL, such as using four spaces for indentation, instead of tab. Lengkuas uses newlines . Semicolons are required in `for` loop expressions. It is highly recommended to keep spaces between values or variables and operators. Function names should use `camelCase` or `Snake_Case`, variables can use `PascalCase`, `Kebab-Case` or ideally `lowercase`. Variables must be initialized upon declaration
 
 ### Data Types and Variables
 `LengkuasSFL` has two kinds of data types: Primitives and sensor stream. Primitives are your usual data types:
@@ -44,7 +44,7 @@ sstream MySensor = 0x21
 
 
 ### Basic I/O
-Basic I/O is essential to take any input and output text, especially for debugging. LengkuasSFL uses `msgIn()` for input and `msgOut()` for this. The text body (whatever is placed in the parentheses) of `msgOut()` automatically goes into a newline at the end. Template literals are also supported by placing a dollar sign (`$`) in front of a variable or function name. Expressions are inserted by wrapping them in curly braces preceded by a dollar sign. String literals (used as the output of `msgOut()`) must always be enclosed in double quotes `"`, single quotes are reserved for punctuation within string literals. Comments use the tilde (`~`) prefix, double tilde (`~~`) for multi-line comments.
+Basic I/O is essential to take any input and output text, especially for debugging. LengkuasSFL uses `msgIn()` for input and `msgOut()` for this. The text body (whatever is placed in the parentheses) of `msgOut()` automatically goes into a newline at the end. String literals (used as the output of `msgOut()`) must always be enclosed in double quotes `"`, single quotes are reserved for punctuation within string literals. Comments use the tilde (`~`) prefix, double tilde (`~~`) for multi-line comments.
 
 Example usage:
 ```LengkuasSFL
@@ -154,6 +154,8 @@ sw(<checking variable>):
     }
 endsw
 ```
+In `if` and `sw` (Switch) statements, `else` and `default`respectively are required branches and cannot be omitted.
+
 ### Functions
 Functions in LengkuasSFL are a core component for writing modular, reusable code. A LengkuasSFL program must always have one main function, which is the standard entry point. The return type is specified after the function name with the arrow operator (`->`). Valid return types are all primitives, `sstream` and  `none`. The return keyword in LengkuasSFL is `ret`. To declare a function, you use the `fun` keyword, and terminate it with 'endfun`.
 In LengkuasSFL, functions are declared as follows:
@@ -187,7 +189,11 @@ endtry
 ```
 
 ### Pointer References
-Pointer references play a crucial role in memory management, debugging and low-level memory references to variables and data structures. LengkuasSFL uses the caret (`^`) for pointers. While LengkuasSFL primarily uses reference counting, it allows for some manual memory management and is also useful for exposing parts of the program to the Foreign Function Interface built into LengkuasSFL to allow custom functions to be called externally in a C/C++ or other externam program or system if necessary.
+Pointer references play a crucial role in memory management, debugging and low-level memory references to variables and data structures. LengkuasSFL uses the caret (`^`) for pointers. Pointers in Lengkuas are not C-style pointers, but rather something akin to `inspect var` and can only be used as a standalone instruction. It cannot be assigned to or be assigned to variables and only exists during its execution. The pointer in Lengkuas is purely diagnostic and does not affect program state. A statement `^x` would output the following information:
+- variable identifier
+- data type
+- size in bytes
+- storage region/offset
 
 ## A Deeper Dive into LengkuasSFL `stdlib`
 LengkuasSFL, as a domain-specific language, of course has some more specific features than the basics discussed above (which are also all part of the standard library). The LengkuasSFL standard library (stdlib) provides a set of built-in functions and keywords for sensor preprocessing, filtering, and communication.
