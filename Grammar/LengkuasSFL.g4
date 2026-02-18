@@ -54,7 +54,7 @@ KELVIN: 'kelvin';
 
 //other syntax
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
-NUMBER: [0-9]+ ('.' [0-9]+)? | '0x' [0-9a-fA-F]+;
+NUMBER: '0x' [0-9a-fA-F]+ | [0-9]+ ('.' [0-9]+)?;
 STRING: '"' ( '\\' . | ~["\\\r\n] )* '"';
 BOOL_LITERAL: 'true' | 'false';
 NIL: 'nil';
@@ -93,23 +93,27 @@ GTE: '>=';
 PTR: '^';
 
 //Parser rules
-program: (statement (NEWLINE+))* EOF;
+program: NEWLINE* (statement (NEWLINE+))* EOF;
 
 simpleStatement: variableDeclaration
-               | functionCall
+               | assignmentStatement
                | incrementDecrement
                | returnStatement
-               | diagnosticStatement;
+               | diagnosticStatement
+               | exprStatement;
+
+exprStatement: expression;
 
 statement: simpleStatement
          | functionDeclaration
          | controlFlow
          | loop
-         | ioOperation
          | asyncBlock
          | errorHandling;
 
 variableDeclaration: (CONST)? dataType (ARR | DICT)? IDENTIFIER ASSIGN expression;
+
+assignmentStatement: IDENTIFIER ASSIGN expression;
 
 dataType: STR | I32 | I64 | F32 | F64 | BOOL | SSTREAM | ANY;
 
@@ -133,11 +137,14 @@ primaryExpression: NUMBER
                  | STRING
                  | BOOL_LITERAL
                  | NIL
+                 | functionCall
                  | IDENTIFIER
                  | LPAREN expression RPAREN;
 
 
-functionDeclaration: FUN IDENTIFIER LPAREN (parameter (COMMA parameter)*)? RPAREN ARROW dataType COLON statement+ ENDFUN;
+blockBody: (statement NEWLINE+)+;
+
+functionDeclaration: FUN IDENTIFIER LPAREN (parameter (COMMA parameter)*)? RPAREN ARROW dataType COLON blockBody ENDFUN;
 
 parameter: dataType IDENTIFIER;
 
@@ -145,31 +152,29 @@ returnStatement: RET expression?;
 
 controlFlow: ifStatement | switchStatement;
 
-ifStatement: IF LPAREN expression RPAREN COLON statement+ (ELIF LPAREN expression RPAREN COLON statement+)* ELSE COLON statement+ ENDIF;
+ifStatement: IF LPAREN expression RPAREN COLON blockBody (ELIF LPAREN expression RPAREN COLON blockBody)* ELSE COLON blockBody ENDIF;
 
 switchStatement: SWITCH LPAREN expression RPAREN COLON (caseBlock)+ defaultBlock ENDSW;
 
-caseBlock: CASE expression COLON statement+ ENDCASE;
+caseBlock: CASE expression COLON blockBody ENDCASE;
 
-defaultBlock: DEFAULT COLON LBRACE statement+ RBRACE;
+defaultBlock: DEFAULT COLON blockBody;
 
 loop: whileLoop |doWhileLoop | forLoop;
 
-whileLoop: WHILE LPAREN expression RPAREN COLON statement+ ENDWHILE;
+whileLoop: WHILE LPAREN expression RPAREN COLON blockBody ENDWHILE;
 
-doWhileLoop: DO COLON statement+ ENDDO WHILE LPAREN expression RPAREN;
+doWhileLoop: DO COLON blockBody ENDDO WHILE LPAREN expression RPAREN;
 
-forLoop: FOR LPAREN variableDeclaration SEMICOLON expression SEMICOLON expression RPAREN COLON statement+ ENDFOR;
-
-ioOperation: functionCall;
+forLoop: FOR LPAREN variableDeclaration SEMICOLON expression SEMICOLON expression RPAREN COLON blockBody+ ENDFOR;
 
 functionCall: IDENTIFIER LPAREN (expression (COMMA expression)*)? RPAREN;
 
 diagnosticStatement: PTR IDENTIFIER;
 
-asyncBlock: ASYNC LPAREN (parameter (COMMA parameter)*)? RPAREN COLON statement+ RESYNC;
+asyncBlock: ASYNC LPAREN (parameter (COMMA parameter)*)? RPAREN COLON blockBody RESYNC;
 
-errorHandling: TRY COLON statement+ CATCH COLON throwStatement ENDTRY;
+errorHandling: TRY COLON blockBody CATCH COLON throwStatement ENDTRY;
 
 throwStatement: THROW LPAREN expression RPAREN;
 
