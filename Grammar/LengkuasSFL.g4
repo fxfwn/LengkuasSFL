@@ -10,6 +10,7 @@ F64: 'f64';
 BOOL: 'bool';
 SSTREAM: 'sstream';
 CONST: 'const';
+ANY: 'any';
 
 //control flow
 IF: 'if';
@@ -18,6 +19,7 @@ ELSE: 'else';
 ENDIF: 'endif';
 SWITCH: 'sw';
 CASE: 'case';
+ENDCASE: 'endcase';
 DEFAULT: 'default';
 ENDSW: 'endsw';
 
@@ -52,8 +54,8 @@ KELVIN: 'kelvin';
 
 //other syntax
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
-NUMBER: [0-9]+ ('.' [0-9]+)? | '0x' [0-9a-fA-F]+;
-STRING: '"' .*? '"';
+NUMBER: '0x' [0-9a-fA-F]+ | [0-9]+ ('.' [0-9]+)?;
+STRING: '"' ( '\\' . | ~["\\\r\n] )* '"';
 BOOL_LITERAL: 'true' | 'false';
 NIL: 'nil';
 SEMICOLON: ';';
@@ -75,9 +77,10 @@ LBRACKET: '[';
 RBRACKET: ']';
 INCREMENT: '++';
 DECREMENT: '--';
-WS: [ \t\r\n]+ -> skip;
-COMMENT: '~' ~[\r\n]* -> skip;
+NEWLINE: ('\r'? '\n')+;
+WS: [ \t]+ -> skip;
 MULTILINE_COMMENT: '~~' .*? '~~' -> skip;
+COMMENT: '~' ~[ \r\n]* -> skip;
 AND: '&&';
 OR: '||';
 NOT: '!';
@@ -90,23 +93,29 @@ GTE: '>=';
 PTR: '^';
 
 //Parser rules
-program: (statement)* EOF;
+program: NEWLINE* (statement (NEWLINE+))* EOF;
 
-statement: variableDeclaration
+simpleStatement: variableDeclaration
+               | assignmentStatement
+               | incrementDecrement
+               | returnStatement
+               | diagnosticStatement
+               | exprStatement;
+
+exprStatement: expression;
+
+statement: simpleStatement
          | functionDeclaration
          | controlFlow
          | loop
-         | ioOperation
-         | templateLiteral
-         | errorHandling
-         | pointerReference
          | asyncBlock
-         | incrementDecrement
-         | returnStatement;
+         | errorHandling;
 
 variableDeclaration: (CONST)? dataType (ARR | DICT)? IDENTIFIER ASSIGN expression;
 
-dataType: STR | I32 | I64 | F32 | F64 | BOOL | SSTREAM;
+assignmentStatement: IDENTIFIER ASSIGN expression;
+
+dataType: STR | I32 | I64 | F32 | F64 | BOOL | SSTREAM | ANY;
 
 expression: orExpr;
 
@@ -128,44 +137,44 @@ primaryExpression: NUMBER
                  | STRING
                  | BOOL_LITERAL
                  | NIL
+                 | functionCall
                  | IDENTIFIER
-                 | templateLiteral
                  | LPAREN expression RPAREN;
 
-templateLiteral: STRING ('$' IDENTIFIER | '${' expression '}$')*;
 
-functionDeclaration: FUN IDENTIFIER LPAREN (parameter (COMMA parameter)*)? RPAREN ARROW dataType COLON statement+ ENDFUN;
+blockBody: (statement NEWLINE+)+;
+
+functionDeclaration: FUN IDENTIFIER LPAREN (parameter (COMMA parameter)*)? RPAREN ARROW dataType COLON blockBody ENDFUN;
 
 parameter: dataType IDENTIFIER;
 
 returnStatement: RET expression?;
+
 controlFlow: ifStatement | switchStatement;
 
-ifStatement: IF LPAREN expression RPAREN COLON statement+ (ELIF LPAREN expression RPAREN COLON statement+)* ELSE COLON statement+ ENDIF;
+ifStatement: IF LPAREN expression RPAREN COLON blockBody (ELIF LPAREN expression RPAREN COLON blockBody)* ELSE COLON blockBody ENDIF;
 
-switchStatement: SWITCH LPAREN expression RPAREN COLON (caseBlock)+ (defaultBlock)? ENDSW;
+switchStatement: SWITCH LPAREN expression RPAREN COLON (caseBlock)+ defaultBlock ENDSW;
 
-caseBlock: CASE expression COLON LBRACE statement+ RBRACE;
+caseBlock: CASE expression COLON blockBody ENDCASE;
 
-defaultBlock: DEFAULT COLON LBRACE statement+ RBRACE;
+defaultBlock: DEFAULT COLON blockBody;
 
 loop: whileLoop |doWhileLoop | forLoop;
 
-whileLoop: WHILE LPAREN expression RPAREN COLON statement+ ENDWHILE;
+whileLoop: WHILE LPAREN expression RPAREN COLON blockBody ENDWHILE;
 
-doWhileLoop: DO COLON statement+ ENDDO WHILE LPAREN expression RPAREN;
+doWhileLoop: DO COLON blockBody ENDDO WHILE LPAREN expression RPAREN;
 
-forLoop: FOR LPAREN variableDeclaration SEMICOLON expression SEMICOLON expression RPAREN COLON statement+ ENDFOR;
-
-ioOperation: functionCall;
+forLoop: FOR LPAREN variableDeclaration SEMICOLON expression SEMICOLON expression RPAREN COLON blockBody ENDFOR;
 
 functionCall: IDENTIFIER LPAREN (expression (COMMA expression)*)? RPAREN;
 
-pointerReference: PTR IDENTIFIER;
+diagnosticStatement: PTR IDENTIFIER;
 
-asyncBlock: ASYNC LPAREN (parameter (COMMA parameter)*)? RPAREN COLON statement+ RESYNC;
+asyncBlock: ASYNC LPAREN (parameter (COMMA parameter)*)? RPAREN COLON blockBody RESYNC;
 
-errorHandling: TRY COLON statement+ CATCH COLON throwStatement ENDTRY;
+errorHandling: TRY COLON blockBody CATCH COLON throwStatement ENDTRY;
 
 throwStatement: THROW LPAREN expression RPAREN;
 
