@@ -166,7 +166,7 @@ whileLoop: WHILE LPAREN expression RPAREN COLON blockBody ENDWHILE;
 
 doWhileLoop: DO COLON blockBody ENDDO WHILE LPAREN expression RPAREN;
 
-forLoop: FOR LPAREN variableDeclaration SEMICOLON expression SEMICOLON expression RPAREN COLON blockBody+ ENDFOR;
+forLoop: FOR LPAREN variableDeclaration SEMICOLON expression SEMICOLON expression RPAREN COLON blockBody ENDFOR;
 
 functionCall: IDENTIFIER LPAREN (expression (COMMA expression)*)? RPAREN;
 
