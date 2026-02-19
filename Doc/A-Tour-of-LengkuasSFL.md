@@ -108,7 +108,7 @@ LengkuasSFL includes a straightforward, basic set of arithmetic operators and fu
 | `rnd()`  | Rounds numbers to nth decimal position (adjustable)                        |
 
 ### Control Flow
-LengkuasSFL has your usual control flow structures: `while` loops, `do/while` loops and `for` loops. And both `if/else` and `switch` (declared with the `sw`keyword) statements. These are used no differently from other programming languages, but are delimited with `endwhile`, `endfor`, `endif` and `endsw`:
+LengkuasSFL has your usual control flow structures: `while` loops, `do/while` loops and `for` loops. And both `if/else` and `switch` (declared with the `sw`keyword) statements. These are used no differently from other programming languages, but are delimited with `endwhile`, `endfor`, `endif` and `endsw` and cases are delimited with `endcase`:
 **While loop**
 ```LengkuasSFL
 while(<condition>):
@@ -141,17 +141,13 @@ endif
 ```LengkuasSFL
 sw(<checking variable>):
     case 1
-    {
         ~case 1 code
-    }
+    endcase
     case 2
-    {
         ~case 2 code
-    }
+    endcase
     default
-    {
         ~default case code
-    }
 endsw
 ```
 In `if` and `sw` (Switch) statements, `else` and `default`respectively are required branches and cannot be omitted.
