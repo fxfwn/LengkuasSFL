@@ -11,9 +11,8 @@ LengkuasSFL or simply Lengkuas is an open source, embedded domain specific scrip
 
 LengkuasSFL aims to follow the following key characteristics:
 
-*   Concise and easily readable
-*   Prototyping and production in one single language
-*   Can be interpreted or cpmpiled
+*   Concise, readable and structured syntax (Inspired by Pascal)
+*   is compiled
 *   Controlled Concurrency without surprises
 *   Memory safety thanks to enforced reference counting
 *   easy to grasp, easy to maintain structure
