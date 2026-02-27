@@ -82,14 +82,14 @@ Variables use primitive or special types, optionally as arrays or dictionaries. 
 
 ```
 variableDeclaration: (CONST)? dataType (ARR | DICT)? IDENTIFIER ASSIGN expression;
-dataType: 'str' | 'i32' | 'i64' | 'f32' | 'f64' | 'bool' | 'sstream';
+dataType: 'str' | 'i32' | 'i64' | 'f32' | 'f64' | 'bool' | 'dstream';
 ```
 
 Example:
 ```LengkuasSFL
 f64 MyVar = 9.81
 const f64 pi = 3.141593
-sstream MySensor = GPIO_PIN_17
+dstream MySensor = GPIO_PIN_17
 f64 arr MyArray = [0.5, 0.49]
 ```
 

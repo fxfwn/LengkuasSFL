@@ -16,30 +16,30 @@ There are style recommendations for coding in LengkuasSFL, such as using four sp
 ### Data Types and Variables
 `LengkuasSFL` has two kinds of data types: Primitives and sensor stream. Primitives are your usual data types:
 
-| Primitives             | Special Types           |
-| ---------------------- | ----------------------- |
-| String (`str`)         | Sensor Stream `sstream` |
-| Boolean (`bool`)       |                         |
-| Integer (`i32`, `i64`) |                         |
-| Float (`f32`, `f64`)   |                         |
+| Primitives             | Special Types         |
+| ---------------------- |-----------------------|
+| String (`str`)         | Data Stream `dstream` |
+| Boolean (`bool`)       |                       |
+| Integer (`i32`, `i64`) |                       |
+| Float (`f32`, `f64`)   |                       |
 
 Variables have no special declaration keyword, while constants use the standard `const` keyword. Variable declaration should look something like this:
 ```LengkuasSFL
 f64 MyVar = 9.81
 const f64 pi = 3.141593
 ```
-Variables in `LengkuasSFL` are always nullable. Since variables must be initialized upon declaration, you'd use the `nil` value for a variable with an initial null value, which prevents the variable from being used anywhere until it gets a non-null value. This cannot be done with constants. Sensor streams (`sstream`) are special variables that give a sensor address or data pins connected to a sensor a name that can be called more easily. These enable you to handle sensor data streams more gracefully by eliminating the need to specify the address or data pin of a sensor each time you want to pass its data stream to a function or array. It's important to note that a variable of type `sstream`, while technically nullable, will only accept hardware addresses (GPIO Pins, UART, I²C) upon declaration and must be declare with such.
+Variables in `LengkuasSFL` are always nullable. Since variables must be initialized upon declaration, you'd use the `nil` value for a variable with an initial null value, which prevents the variable from being used anywhere until it gets a non-null value. This cannot be done with constants. Data streams (`dstream`) are special variables that give a sensor address or data pins connected to a sensor a name that can be called more easily. These enable you to handle sensor data streams more gracefully by eliminating the need to specify the address or data pin of a sensor each time you want to pass its data stream to a function or array. It's important to note that a variable of type `dstream`, while technically nullable, will only accept hardware addresses (GPIO Pins, UART, I²C) upon declaration and must be declared with such.
 Usage:
 ```LengkuasSFL
-sstream MySensor = <sensor address or connected GPIO pin>
+dstream MySensor = <sensor address or connected GPIO pin>
 ```
 Example using a GPIO pin:
 ```LengkuasSFL
-sstream MySensor = GPIO_PIN_17
+dstream MySensor = GPIO_PIN_17
 ```
 Example using an I2C address:
 ```LengkuasSFL
-sstream MySensor = 0x21
+dstream MySensor = 0x21
 ```
 
 
@@ -62,7 +62,7 @@ f64 arr MyArray = [0.5, 0.49, ...]
 It's important to note that higher dimensional arrays may be added in a later version of LengkuasSFL. 
 Arrays can be null initially, which would make them unusable until data is pushed to the array. The first push to an array initialized with `nil` always overwrites the `nil` position, which would always be at index 0, since arrays in LengkuasSFL are zero-based. New data is pushed to an array with `push()`, and deleted with `pop()`. Here's an example:
 ```LengkuasSFL
-sstream MySensor = 0x21
+dstream MySensor = 0x21
 f64 arr MyArr = [nil]
 MyArr.push(MySensor) ~pushing a sensor stream to myArr
 
@@ -198,20 +198,20 @@ It is designed to be lightweight, deterministic, and embedded-friendly while kee
 ### Math & Numeric Utilities
 
 
-| Function Signature                             | Description                                                                                                |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Function Signature                    | Description                                                                                              |
+|---------------------------------------|----------------------------------------------------------------------------------------------------------|
 | `limits(min?, max?)`                  | Clamps a numeric value to a defined range. If only one bound is given, acts as either a min or max clamp |
 | `rnd(n)`                              | Rounds a floating-point value to *n* decimal places. Example: `rnd(2)` -> round to two decimals.         |
-| `normalize(sstream)`                  | Normalizes an `sstream` to range `[0, 1]`.                                                               |
+| `normalize(dstream)`                  | Normalizes an `dstream` to range `[0, 1]`.                                                               |
 | `scale(inMin, inMax, outMin, outMax)` | Maps a reading from one range to another.                                                                |
 
 ### Sensor Measurement Utilities
 
-| Function Signature          | Description                                                                                                                                                                                                       |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `temp(<unit>)`     | Converts the reading from a temperature sensor `sstream` to the chosen unit. Vald units: `celsius`, `fahrenheit`, `kelvin`. Numeric limits are applied automatically. Example: `msgOut(tempProbe.temp(celsius))` |
-| `humidity(<unit>)` | Interprets humidity sensor data (e.g. %RH)                                                                                                                                                                      |
-| `pressure(<unit>)` | Converts pressure sensor data to target unit (e.g. `kPa`, `bar`)                                                                                                                                                |
+| Function Signature          | Description                                                                                                                                                                                                      |
+| ------------------ |------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `temp(<unit>)`     | Converts the reading from a temperature sensor `dstream` to the chosen unit. Vald units: `celsius`, `fahrenheit`, `kelvin`. Numeric limits are applied automatically. Example: `msgOut(tempProbe.temp(celsius))` |
+| `humidity(<unit>)` | Interprets humidity sensor data (e.g. %RH)                                                                                                                                                                       |
+| `pressure(<unit>)` | Converts pressure sensor data to target unit (e.g. `kPa`, `bar`)                                                                                                                                                 |
 
 ### Signal & Filter Functions
 
@@ -247,8 +247,8 @@ TempSensor.temp(celsius).limits(0,100).rnd(2)
 This feature keeps code readable and self-documenting without introducing true object orientation.
 
 ### Planned Extensions
-- `calibrate(<sstream>, <config dict>)` — apply calibration constants or offsets
-- `event(<sstream>)` — asynchronous event listener for sensor triggers 
+- `calibrate(<dstream>, <config dict>)` — apply calibration constants or offsets
+- `event(<dstream>)` — asynchronous event listener for sensor triggers 
 - `fft(<array>)` — simple frequency domain transform (for richer signals)
 
 For more in-depth information on `stdlib`, please refer to the **LengkuasSFL Standard Library Reference**.

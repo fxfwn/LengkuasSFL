@@ -8,7 +8,7 @@ I64: 'i64';
 F32: 'f32';
 F64: 'f64';
 BOOL: 'bool';
-SSTREAM: 'sstream';
+DSTREAM: 'dstream';
 CONST: 'const';
 ANY: 'any';
 
@@ -115,7 +115,7 @@ variableDeclaration: (CONST)? dataType (ARR | DICT)? IDENTIFIER ASSIGN expressio
 
 assignmentStatement: IDENTIFIER ASSIGN expression;
 
-dataType: STR | I32 | I64 | F32 | F64 | BOOL | SSTREAM | ANY;
+dataType: STR | I32 | I64 | F32 | F64 | BOOL | DSTREAM | ANY;
 
 expression: orExpr;
 
