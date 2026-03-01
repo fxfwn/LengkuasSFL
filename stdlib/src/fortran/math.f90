@@ -1,5 +1,5 @@
 !stdlib implementation for module math
-program math
+module math
     implicit none
     !implementation goes here
-end program math
+end module math
